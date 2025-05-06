@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управления складом - Складчик</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            position: sticky;
+            top: 20px;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .low-stock {
+            border-left: 4px solid #dc3545;
+        }
+        .medium-stock {
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Складская система</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="bi bi-house"></i> Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#inventory"><i class="bi bi-box-seam"></i> Товары на складе</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#orders"><i class="bi bi-clipboard-check"></i> Заказы на поставку</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reports"><i class="bi bi-file-earmark-bar-graph"></i> Отчеты</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> Петр Складской
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#profile"><i class="bi bi-person"></i> Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right"></i> Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Боковая панель -->
+            <aside class="col-lg-2">
+                <div class="sidebar">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-speedometer2"></i> Быстрые действия
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-outline-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle"></i> Добавить товар
+                            </button>
+                            <button class="btn btn-outline-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+                                <i class="bi bi-cart-plus"></i> Создать заказ
+                            </button>
+                            <button class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                                <i class="bi bi-file-earmark-text"></i> Создать отчет
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="bi bi-exclamation-triangle"></i> Критические остатки
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger py-2 mb-2">
+                                <small>Товар A123: 2 шт.</small>
+                            </div>
+                            <div class="alert alert-danger py-2 mb-2">
+                                <small>Товар B456: 3 шт.</small>
+                            </div>
+                            <div class="alert alert-warning py-2">
+                                <small>Товар C789: 5 шт.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <i class="bi bi-clock-history"></i> Последние действия
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">Обновлен товар X321</li>
+                                <li class="mb-2">Создан отчет за 15.04</li>
+                                <li class="mb-2">Заказано 10 ед. Y654</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Основной контент -->
+            <main class="col-lg-10">
+                <!-- Статистика -->
+                <section class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Всего товаров</h6>
+                                        <h2 class="mb-0">1,248</h2>
+                                    </div>
+                                    <i class="bi bi-box-seam fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-success mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Достаточный запас</h6>
+                                        <h2 class="mb-0">956</h2>
+                                    </div>
+                                    <i class="bi bi-check-circle fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-warning mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Заканчивается</h6>
+                                        <h2 class="mb-0">45</h2>
+                                    </div>
+                                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-danger mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Критический уровень</h6>
+                                        <h2 class="mb-0">12</h2>
+                                    </div>
+                                    <i class="bi bi-exclamation-octagon fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Товары на складе -->
+                <section id="inventory" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2><i class="bi bi-box-seam"></i> Товары на складе</h2>
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" class="form-control" placeholder="Поиск товара...">
+                            <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#">Все товары</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Критический уровень</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Скоро закончится</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Новые поступления</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Код товара</th>
+                                            <th>Наименование</th>
+                                            <th>Категория</th>
+                                            <th>Количество</th>
+                                            <th>Ед. измерения</th>
+                                            <th>Место хранения</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="low-stock">
+                                            <td>P-10023</td>
+                                            <td>Процессор Intel Core i9</td>
+                                            <td>Комплектующие</td>
+                                            <td><span class="badge bg-danger">2</span></td>
+                                            <td>шт.</td>
+                                            <td>Секция A-12</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr class="medium-stock">
+                                            <td>M-20456</td>
+                                            <td>Монитор 27" 4K</td>
+                                            <td>Мониторы</td>
+                                            <td><span class="badge bg-warning text-dark">5</span></td>
+                                            <td>шт.</td>
+                                            <td>Секция B-05</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>K-30112</td>
+                                            <td>Клавиатура беспроводная</td>
+                                            <td>Периферия</td>
+                                            <td><span class="badge bg-success">24</span></td>
+                                            <td>шт.</td>
+                                            <td>Секция C-08</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>H-40567</td>
+                                            <td>Жесткий диск 2TB</td>
+                                            <td>Комплектующие</td>
+                                            <td><span class="badge bg-success">18</span></td>
+                                            <td>шт.</td>
+                                            <td>Секция A-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Предыдущая</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Следующая</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Заказы на поставку -->
+                <section id="orders" class="mb-5">
+                    <h2 class="mb-3"><i class="bi bi-clipboard-check"></i> Заказы на поставку</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card card-hover mb-4">
+                                <div class="card-header bg-warning">
+                                    <h5 class="mb-0">Ожидают обработки</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12345</h6>
+                                                <small>15.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: ТехноПром</p>
+                                            <small>5 позиций</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12344</h6>
+                                                <small>14.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: КомплектСервис</p>
+                                            <small>3 позиции</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card card-hover mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">В процессе</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12340</h6>
+                                                <small>12.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: ЭлектронТорг</p>
+                                            <small>8 позиций</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12338</h6>
+                                                <small>10.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: ОфисТехника</p>
+                                            <small>12 позиций</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card card-hover mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Завершены</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12335</h6>
+                                                <small>08.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: ТехноПром</p>
+                                            <small>7 позиций</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Заказ #12330</h6>
+                                                <small>05.04.2023</small>
+                                            </div>
+                                            <p class="mb-1">Поставщик: КомплектСервис</p>
+                                            <small>4 позиции</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Отчеты -->
+                <section id="reports" class="mb-5">
+                    <h2 class="mb-3"><i class="bi bi-file-earmark-bar-graph"></i> Отчеты</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card card-hover">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-earmark-text fs-1 text-primary"></i>
+                                    <h5 class="card-title mt-3">Отчет за месяц</h5>
+                                    <p class="card-text">Сводка по движению товаров за апрель 2023</p>
+                                    <button class="btn btn-outline-primary me-2"><i class="bi bi-eye"></i> Просмотр</button>
+                                    <button class="btn btn-outline-secondary"><i class="bi bi-download"></i> Скачать</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card card-hover">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-earmark-excel fs-1 text-success"></i>
+                                    <h5 class="card-title mt-3">Остатки на складе</h5>
+                                    <p class="card-text">Текущие остатки товаров по всем категориям</p>
+                                    <button class="btn btn-outline-primary me-2"><i class="bi bi-eye"></i> Просмотр</button>
+                                    <button class="btn btn-outline-secondary"><i class="bi bi-download"></i> Скачать</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card card-hover">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-earmark-pdf fs-1 text-danger"></i>
+                                    <h5 class="card-title mt-3">Критические остатки</h5>
+                                    <p class="card-text">Список товаров с критическим уровнем запасов</p>
+                                    <button class="btn btn-outline-primary me-2"><i class="bi bi-eye"></i> Просмотр</button>
+                                    <button class="btn btn-outline-secondary"><i class="bi bi-download"></i> Скачать</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Модальное окно добавления товара -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавление нового товара</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Код товара</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Наименование</label>
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Категория</label>
+                                <select class="form-select">
+                                    <option selected>Выберите категорию</option>
+                                    <option>Комплектующие</option>
+                                    <option>Мониторы</option>
+                                    <option>Периферия</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Количество</label>
+                                <input type="number" class="form-control" min="0">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Единица измерения</label>
+                                <select class="form-select">
+                                    <option selected>шт.</option>
+                                    <option>уп.</option>
+                                    <option>кг</option>
+                                    <option>л</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Место хранения</label>
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Добавить товар</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно создания заказа -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Создание заказа на поставку</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Поставщик</label>
+                                <select class="form-select">
+                                    <option selected>Выберите поставщика</option>
+                                    <option>ТехноПром</option>
+                                    <option>КомплектСервис</option>
+                                    <option>ЭлектронТорг</option>
+                                    <option>ОфисТехника</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Дата ожидаемой поставки</label>
+                                <input type="date" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Товары</label>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Товар</th>
+                                            <th>Количество</th>
+                                            <th>Цена за ед.</th>
+                                            <th>Сумма</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <select class="form-select">
+                                                    <option selected>Выберите товар</option>
+                                                    <option>Процессор Intel Core i9</option>
+                                                    <option>Монитор 27" 4K</option>
+                                                    <option>Клавиатура беспроводная</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" class="form-control" min="1" value="1"></td>
+                                            <td><input type="number" class="form-control" min="0" step="0.01" value="0"></td>
+                                            <td>0.00 ₽</td>
+                                            <td><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5" class="text-end">
+                                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-plus"></i> Добавить товар</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3"></td>
+                                            <th>Итого:</th>
+                                            <td>0.00 ₽</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Комментарий</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Создать заказ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно генерации отчета -->
+    <div class="modal fade" id="generateReportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Генерация отчета</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Тип отчета</label>
+                            <select class="form-select">
+                                <option selected>Выберите тип отчета</option>
+                                <option>Остатки на складе</option>
+                                <option>Движение товаров</option>
+                                <option>Критические остатки</option>
+                                <option>Заказы на поставку</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Дата начала</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Дата окончания</label>
+                                <input type="date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Формат</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="reportFormat" id="formatPdf" value="pdf" checked>
+                                    <label class="form-check-label" for="formatPdf">PDF</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="reportFormat" id="formatExcel" value="excel">
+                                    <label class="form-check-label" for="formatExcel">Excel</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="reportFormat" id="formatCsv" value="csv">
+                                    <label class="form-check-label" for="formatCsv">CSV</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary">Сгенерировать отчет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-dark text-white py-3 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">© 2023 Система управления складом. Все права защищены.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted">Версия 1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
